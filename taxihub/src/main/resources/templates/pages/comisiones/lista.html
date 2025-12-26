@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Comisiones - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column" style="height: 100%; overflow-y: auto;">
+    <div class="container-fluid p-4">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="h4 mb-1">
+                                <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                Gestión de Comisiones
+                            </h2>
+                            <p class="text-muted mb-0">Administra las comisiones por salidas de vehículos</p>
+                        </div>
+                        <div class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Solo se pueden editar comisiones existentes
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" th:action="@{/comisiones}">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Resultados por página</label>
+                                <select name="size" class="form-select" th:value="${currentSize}">
+                                    <option value="5" th:selected="${currentSize == 5}">5</option>
+                                    <option value="10" th:selected="${currentSize == 10}">10</option>
+                                    <option value="20" th:selected="${currentSize == 20}">20</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search me-1"></i>Aplicar Filtros
+                                </button>
+                                <a th:href="@{/comisiones}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>
+                        Lista de Comisiones 
+                        <span class="badge bg-primary ms-2" th:text="${comisiones.totalElements}"></span>
+                    </h5>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Monto</th>
+                                <th>Fecha Creación</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="comision : ${comisiones.content}">
+                                <td>
+                                    <span class="fw-bold text-primary" th:text="${comision.id}"></span>
+                                </td>
+                                <td>
+                                    <code class="text-info" th:text="${comision.codigo}"></code>
+                                </td>
+                                <td>
+                                    <span class="fw-medium" th:text="${comision.nombre}"></span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">
+                                        S/. <span th:text="${#numbers.formatDecimal(comision.monto, 1, 2)}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted" th:text="${#temporals.format(comision.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></small>
+                                </td>
+                                <td class="text-center">
+                                    <a th:href="@{/comisiones/editar/{id}(id=${comision.id})}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Editar comisión">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer" th:if="${comisiones.totalPages > 1}">
+                    <nav aria-label="Paginación de comisiones">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${!comisiones.hasPrevious()} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/comisiones(page=${currentPage - 1}, size=${currentSize})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, comisiones.totalPages - 1)}"
+                                th:classappend="${pageNum == currentPage} ? 'active'">
+                                <a class="page-link" 
+                                   th:href="@{/comisiones(page=${pageNum}, size=${currentSize})}"
+                                   th:text="${pageNum + 1}"></a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${!comisiones.hasNext()} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/comisiones(page=${currentPage + 1}, size=${currentSize})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

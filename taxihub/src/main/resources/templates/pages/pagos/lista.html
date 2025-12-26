@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Pagos - Administrador - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column" style="height: 100%; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cash-coin me-2"></i>Todos los Pagos </h2>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/pagos}" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label for="numeroDocumento" class="form-label">DNI Conductor</label>
+                    <input type="text" class="form-control" id="numeroDocumento" name="numeroDocumento" 
+                           th:value="${numeroDocumento}" placeholder="12345678" maxlength="8">
+                </div>
+                <div class="col-md-2">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" 
+                           th:value="${fecha}">
+                </div>
+                <div class="col-md-2">
+                    <label for="modalidad" class="form-label">Modalidad</label>
+                    <select class="form-select" id="modalidad" name="modalidad">
+                        <option value="">Todas</option>
+                        <option value="EFECTIVO" th:selected="${modalidad == 'EFECTIVO'}">EFECTIVO</option>
+                        <option value="BILLETERA VIRTUAL" th:selected="${modalidad == 'BILLETERA VIRTUAL'}">BILLETERA VIRTUAL</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        <option value="POR REVISAR" th:selected="${estado == 'POR REVISAR'}">POR REVISAR</option>
+                        <option value="EN REVISION" th:selected="${estado == 'EN REVISION'}">EN REVISION</option>
+                        <option value="APROBADO" th:selected="${estado == 'APROBADO'}">APROBADO</option>
+                        <option value="RECHAZADO" th:selected="${estado == 'RECHAZADO'}">RECHAZADO</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a th:href="@{/pagos}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                </div>
+                
+                <input type="hidden" name="page" th:value="${currentPage}">
+                <input type="hidden" name="size" th:value="${currentSize}">
+                <input type="hidden" name="sort" th:value="${currentSort}">
+                <input type="hidden" name="direction" th:value="${currentDirection}">
+            </form>
+        </div>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; min-height: 0;">
+        
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Conductor</th>
+                                <th>Fecha</th>
+                                <th>Modalidad</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Deuda ID</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${pagos.isEmpty()}" class="text-center">
+                                <td colspan="8" class="py-4">
+                                    <i class="bi bi-inbox text-muted fs-1"></i>
+                                    <p class="text-muted mt-2">No se encontraron pagos con los filtros aplicados</p>
+                                </td>
+                            </tr>
+                            <tr th:each="pago : ${pagos.content}" th:if="${!pagos.isEmpty()}">
+                                <td th:text="${pago.id}">#123</td>
+                                <td>
+                                    <span th:if="${pago.deuda?.empleado?.persona?.nombre != null}" 
+                                          th:text="${pago.deuda.empleado.persona.nombre + ' (' + pago.deuda.empleado.persona.numeroDocumento + ')'}">Nombre (12345678)</span>
+                                    <span th:unless="${pago.deuda?.empleado?.persona?.nombre != null}" 
+                                          th:text="'N/A'">N/A</span>
+                                </td>
+                                <td th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</td>
+                                <td th:text="${pago.modalidadPago}">EFECTIVO</td>
+                                <td th:text="${'S/ ' + #numbers.formatDecimal(pago.montoPago, 1, 2)}">S/ 50.00</td>
+                                <td th:text="${pago.estado}">POR REVISAR</td>
+                                <td th:text="${pago.deudaId}">#456</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/pagos/ver/{id}(id=${pago.id})}" 
+                                           class="btn btn-outline-info" 
+                                           title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:if="${#authorization.expression('hasAuthority(''GESTIONAR_PAGOS'')')}"
+                                           th:href="@{/pagos/gestionar/{id}(id=${pago.id})}" 
+                                           class="btn btn-outline-warning" 
+                                           title="Gestionar pago">
+                                            <i class="bi bi-gear"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <nav th:if="${!pagos.isEmpty() && pagos.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${pagos.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/pagos(page=${pagos.number - 1}, size=${currentSize}, sort=${currentSort}, direction=${currentDirection}, numeroDocumento=${numeroDocumento}, fecha=${fecha}, modalidad=${modalidad}, estado=${estado}, activo=${activo})}">
+                        Anterior
+                    </a>
+                </li>
+                
+                <li th:each="pageNum : ${#numbers.sequence(0, pagos.totalPages - 1)}" 
+                    class="page-item" 
+                    th:classappend="${pageNum == pagos.number ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/pagos(page=${pageNum}, size=${currentSize}, sort=${currentSort}, direction=${currentDirection}, numeroDocumento=${numeroDocumento}, fecha=${fecha}, modalidad=${modalidad}, estado=${estado}, activo=${activo})}" 
+                       th:text="${pageNum + 1}">1</a>
+                </li>
+                
+                <li class="page-item" th:classappend="${pagos.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/pagos(page=${pagos.number + 1}, size=${currentSize}, sort=${currentSort}, direction=${currentDirection}, numeroDocumento=${numeroDocumento}, fecha=${fecha}, modalidad=${modalidad}, estado=${estado}, activo=${activo})}">
+                        Siguiente
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+    </div>
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

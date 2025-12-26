@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Dashboard - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </h2>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/dashboard}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="fecha" class="form-label fw-bold">Consultar datos del día:</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" 
+                           th:value="${fechaSeleccionada}" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>Consultar
+                    </button>
+                </div>
+
+                <div class="col-md-5 text-end">
+                    <small class="text-muted">
+                        Datos al: <span th:text="${#temporals.format(fechaSeleccionada, 'dd/MM/yyyy')}"></span>
+                    </small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger mb-4">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
+    <div th:if="${kpis}" class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-danger border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Total por Cobrar</h6>
+                            <h4 class="mb-0 text-danger fw-bold">
+                                S/ <span th:text="${#numbers.formatDecimal(kpis.totalDeudasPorCobrar, 1, 2)}">0.00</span>
+                            </h4>
+                            <small class="text-muted">Saldo pendiente de deudas</small>
+                        </div>
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-primary border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Empleados c/ Auto Empresa</h6>
+                            <h4 class="mb-0 text-primary fw-bold" th:text="${kpis.empleadosActivosConAutoEmpresa}">0</h4>
+                            <small class="text-muted">Empleados activos</small>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-car-front fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-success border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Empleados c/ Auto Propio</h6>
+                            <h4 class="mb-0 text-success fw-bold" th:text="${kpis.empleadosActivosConAutoPropio}">0</h4>
+                            <small class="text-muted">Empleados activos</small>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-person-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-warning border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Pagos del Día</h6>
+                            <h4 class="mb-0 text-warning fw-bold">
+                                S/ <span th:text="${#numbers.formatDecimal(kpis.totalPagosDelDia, 1, 2)}">0.00</span>
+                            </h4>
+                            <small class="text-muted">Pagos aprobados</small>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-cash-coin fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${kpis}" class="row g-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-clipboard-data me-2"></i>Deudas Pendientes
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-danger mb-2" th:text="${kpis.cantidadDeudasPendientes}">0</h3>
+                    <p class="text-muted mb-0">Deudas con saldo > 0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-people me-2"></i>Empleados Activos
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-info mb-2" th:text="${kpis.totalEmpleadosActivos}">0</h3>
+                    <p class="text-muted mb-0">Total empleados activos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-12">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-car-front-fill me-2"></i>Flota de Autos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary mb-1" th:text="${kpis.totalAutosEmpresa}">0</h4>
+                            <small class="text-muted">Autos Empresa</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success mb-1" th:text="${kpis.totalAutosPersonales}">0</h4>
+                            <small class="text-muted">Autos Personales</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:unless="${kpis}" class="text-center py-5">
+        <i class="bi bi-bar-chart fs-1 text-muted mb-3"></i>
+        <h5 class="text-muted">No hay datos disponibles</h5>
+        <p class="text-muted">Selecciona una fecha para consultar los KPIs</p>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

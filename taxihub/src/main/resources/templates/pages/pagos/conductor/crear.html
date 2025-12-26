@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Nuevo Pago - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi me-2 bi-plus-circle"></i>
+            Nuevo Pago
+        </h2>
+        <a th:href="@{/pagos/conductor}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver a Mis Pagos
+        </a>
+    </div>
+
+    <form method="post" th:action="@{/pagos/conductor/guardar}" th:object="${pagoForm}" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-cash-coin me-2"></i>Información del Pago
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="deudaId" class="form-label">Deuda a Pagar *</label>
+                            <div th:if="${deudaSeleccionada != null}">
+                                <input type="text" class="form-control readonly-field" 
+                                       th:value="|Deuda #${deudaSeleccionada.id} - S/. ${#numbers.formatDecimal(deudaSeleccionada.saldoPendiente, 1, 2)}|"
+                                       readonly>
+                                <input type="hidden" th:field="*{deudaId}">
+                                <div class="form-text">Deuda seleccionada para pagar</div>
+                            </div>
+                            <div th:unless="${deudaSeleccionada != null}">
+                                <select class="form-select" th:field="*{deudaId}" required>
+                                    <option value="">Seleccionar deuda...</option>
+                                    <option th:each="deuda : ${deudasPendientes}" 
+                                            th:value="${deuda.id}"
+                                            th:text="|Deuda #${deuda.id} - S/. ${#numbers.formatDecimal(deuda.saldoPendiente, 1, 2)}|">
+                                    </option>
+                                </select>
+                                <div class="form-text">Selecciona la deuda que deseas pagar</div>
+                            </div>
+                            <div th:if="${#fields.hasErrors('deudaId')}" class="invalid-feedback d-block">
+                                <span th:errors="*{deudaId}"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monto" class="form-label">Monto a Pagar *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/.</span>
+                                <input type="number" class="form-control" th:field="*{monto}"
+                                       th:classappend="${#fields.hasErrors('monto')} ? 'is-invalid' : ''"
+                                       step="0.01" min="0.01" placeholder="0.00">
+                                <div th:if="${#fields.hasErrors('monto')}" class="invalid-feedback d-block">
+                                    <span th:errors="*{monto}"></span>
+                                </div>
+                            </div>
+                            <div class="form-text">Ingresa el monto que deseas pagar</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                            <textarea class="form-control" th:field="*{descripcion}" rows="3"
+                                      th:classappend="${#fields.hasErrors('descripcion')} ? 'is-invalid' : ''"
+                                      placeholder="Comentarios adicionales sobre el pago..."></textarea>
+                            <div th:if="${#fields.hasErrors('descripcion')}" class="invalid-feedback d-block">
+                                <span th:errors="*{descripcion}"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="voucher" class="form-label">Imagen del Voucher *</label>
+                            <input type="file" class="form-control" id="voucher" th:field="*{voucher}"
+                                   th:classappend="${#fields.hasErrors('voucher')} ? 'is-invalid' : ''"
+                                   accept="image/*">
+                            <div class="form-text">
+                                Sube una foto clara del voucher de pago (JPG, PNG). Máximo 5MB.
+                            </div>
+                            <div th:if="${#fields.hasErrors('voucher')}" class="invalid-feedback">
+                                <span th:errors="*{voucher}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card" th:if="${deudaSeleccionada}">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Deuda Seleccionada
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>ID:</strong> <span th:text="${deudaSeleccionada.id}"></span></p>
+                        <p><strong>Monto Deuda:</strong> S/. <span th:text="${#numbers.formatDecimal(deudaSeleccionada.montoDeuda, 1, 2)}"></span></p>
+                        <p><strong>Monto Pagado:</strong> S/. <span th:text="${#numbers.formatDecimal(deudaSeleccionada.montoPagado, 1, 2)}"></span></p>
+                        <p><strong>Saldo Pendiente:</strong> 
+                           <span class="text-danger fw-bold">S/. <span th:text="${#numbers.formatDecimal(deudaSeleccionada.saldoPendiente, 1, 2)}"></span></span>
+                        </p>
+                        <p><strong>Fecha:</strong> <span th:text="${deudaSeleccionada.fechaCreacion != null ? #temporals.format(deudaSeleccionada.fechaCreacion, 'dd/MM/yyyy') : 'N/A'}"></span></p>
+                    </div>
+                </div>
+
+                <div class="card mt-3" th:unless="${deudaSeleccionada}">
+                    <div class="card-body text-center text-muted">
+                        <i class="bi bi-info-circle fs-1 mb-3"></i>
+                        <p>Selecciona una deuda para ver sus detalles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>Registrar Pago
+            </button>
+            <a th:href="@{/pagos/conductor}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-2"></i>Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

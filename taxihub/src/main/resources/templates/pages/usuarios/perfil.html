@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, 'Mi Perfil - TaxiHub', ~{::scripts})}">
+
+<head>
+    <title>Mi Perfil</title>
+</head>
+
+<body>
+
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-circle me-2"></i>Mi Perfil</h2>
+        <a href="/usuarios/perfil/cambiar-contrasena" class="btn btn-outline-primary">
+            <i class="bi bi-key me-2"></i>Cambiar Contraseña
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div th:if="${usuario.imagen != null and usuario.imagenTipo != null and usuario.imagenBase64 != null}">
+                            <img th:src="'data:' + ${usuario.imagenTipo} + ';base64,' + ${usuario.imagenBase64}" 
+                                 class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" 
+                                 alt="Foto de perfil">
+                        </div>
+                        <div th:unless="${usuario.imagen != null and usuario.imagenTipo != null and usuario.imagenBase64 != null}">
+                            <i class="bi bi-person-circle" style="font-size: 6rem; color: #6c757d;"></i>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${usuario.empleado != null}" class="mb-3">
+                        <form th:action="@{/usuarios/perfil/cambiar-foto}" method="post" enctype="multipart/form-data">
+                            <div class="mb-2">
+                                <input type="file" class="form-control form-control-sm" name="imagen" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-camera me-1"></i>Cambiar Foto
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <h5 class="card-title" th:text="${usuario.correo}">usuario@ejemplo.com</h5>
+                    <span th:if="${usuario.contrasenaTemporal != null and usuario.contrasenaTemporal}" class="badge bg-warning mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Contraseña Temporal
+                    </span>
+                    <span th:unless="${usuario.contrasenaTemporal != null and usuario.contrasenaTemporal}" class="badge bg-success mb-2">
+                        <i class="bi bi-check-circle me-1"></i>Contraseña Normal
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información Básica</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>ID:</strong> <span th:text="${usuario.id}">1</span></p>
+                            <p><strong>Estado:</strong> 
+                                <span th:if="${usuario.activo}" class="badge bg-success">Activo</span>
+                                <span th:unless="${usuario.activo}" class="badge bg-danger">Inactivo</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Fecha de Creación:</strong> 
+                                <span th:text="${#temporals.format(usuario.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                            </p>
+                            <p th:if="${usuario.fechaActualizacion != null}"><strong>Última Actualización:</strong> 
+                                <span th:text="${#temporals.format(usuario.fechaActualizacion, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>Grupos</h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${usuario.grupos != null and !usuario.grupos.isEmpty()}">
+                        <span th:each="grupo : ${usuario.grupos}" 
+                              class="badge bg-info me-2 mb-2" th:text="${grupo.nombreGrupo}">
+                            Grupo Ejemplo
+                        </span>
+                    </div>
+                    <div th:if="${usuario.grupos == null or usuario.grupos.isEmpty()}" class="text-muted">
+                        <i class="bi bi-dash-circle me-1"></i>No pertenece a ningún grupo
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Autoridades</h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${usuario.autoridades != null and !usuario.autoridades.isEmpty()}">
+                        <span th:each="autoridad : ${usuario.autoridades}" 
+                              class="badge bg-secondary me-2 mb-2" th:text="${autoridad.nombreAutoridad}">
+                            Autoridad Ejemplo
+                        </span>
+                    </div>
+                    <div th:if="${usuario.autoridades == null or usuario.autoridades.isEmpty()}" class="text-muted">
+                        <i class="bi bi-dash-circle me-1"></i>No tiene autoridades asignadas
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${empleado != null}" class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Información del Empleado</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Número de Documento:</strong> <span th:text="${empleado.persona.numeroDocumento}">12345678</span></p>
+                            <p><strong>Cargo:</strong> <span th:text="${empleado.cargo.nombre}">Cargo</span></p>
+                            <p><strong>Fecha Inicio:</strong> <span th:text="${#temporals.format(empleado.fechaInicio, 'dd/MM/yyyy')}">01/01/2024</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p th:if="${empleado.fechaFin != null}"><strong>Fecha Fin:</strong> <span th:text="${#temporals.format(empleado.fechaFin, 'dd/MM/yyyy')}">01/01/2024</span></p>
+                            <p><strong>Estado:</strong> 
+                                <span th:if="${empleado.activo}" class="badge bg-success">Activo</span>
+                                <span th:unless="${empleado.activo}" class="badge bg-danger">Inactivo</span>
+                            </p>
+                            <p th:if="${empleado.fechaCreacion != null}"><strong>Fecha Creación:</strong> <span th:text="${#temporals.format(empleado.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${empleado != null and empleado.persona != null}" class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-person-vcard me-2"></i>Información Personal</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> <span th:text="${empleado.persona.nombre}">Nombre</span></p>
+                            <p><strong>Apellido Paterno:</strong> <span th:text="${empleado.persona.apePaterno}">Apellido Paterno</span></p>
+                            <p th:if="${empleado.persona.apeMaterno != null}"><strong>Apellido Materno:</strong> <span th:text="${empleado.persona.apeMaterno}">Apellido Materno</span></p>
+                            <p><strong>Género:</strong> <span th:text="${empleado.persona.genero}">M/F</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p th:if="${empleado.persona.fechaNac != null}"><strong>Fecha Nacimiento:</strong> <span th:text="${#temporals.format(empleado.persona.fechaNac, 'dd/MM/yyyy')}">01/01/1990</span></p>
+                            <p th:if="${empleado.persona.direccion != null}"><strong>Dirección:</strong> <span th:text="${empleado.persona.direccion}">Dirección</span></p>
+                            <p th:if="${empleado.persona.distrito != null}"><strong>Distrito:</strong> <span th:text="${empleado.persona.distrito.nombre}">Distrito</span></p>
+                            <p th:if="${empleado.persona.tipoDocumento != null}"><strong>Tipo Documento:</strong> <span th:text="${empleado.persona.tipoDocumento.nombre}">DNI</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${auto != null}" class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-car-front me-2"></i>Auto Asignado</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Placa:</strong> <span th:text="${auto.placa}">ABC-123</span></p>
+                            <p><strong>Marca:</strong> <span th:text="${auto.marca}">Toyota</span></p>
+                            <p><strong>Modelo:</strong> <span th:text="${auto.modelo}">Corolla</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Año:</strong> <span th:text="${auto.anio}">2020</span></p>
+                            <p><strong>Color:</strong> <span th:text="${auto.color}">Blanco</span></p>
+                            <p><strong>Estado:</strong>
+                                <span th:if="${auto.activo}" class="badge bg-success">Activo</span>
+                                <span th:unless="${auto.activo}" class="badge bg-danger">Inactivo</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

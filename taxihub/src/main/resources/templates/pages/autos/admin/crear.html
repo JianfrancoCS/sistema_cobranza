@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Auto - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <th:block th:with="
+        isCreating=${modo == null or modo == 'crear'},
+        isEditing=${modo == 'editar'},
+        hasAutoData=${auto != null},
+        shouldShowForm=${(isCreating and auto != null) or isEditing}
+    ">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi me-2" th:classappend="${isCreating} ? 'bi-car-front-fill' : 'bi-pencil-square'"></i>
+                <span th:text="${isCreating} ? 'Nuevo Auto' : 'Editar Auto'">Auto</span>
+            </h2>
+            <a th:href="@{/autos}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+        </div>
+
+        <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; min-height: 0;">
+            <div th:if="${successMessage}"
+                 th:attr="data-success-message=${successMessage}"
+                 style="display: none;"></div>
+            <div th:if="${errorMessage}"
+                 th:attr="data-error-message=${errorMessage}"
+                 style="display: none;"></div>
+
+            <div class="card mb-4" th:if="${isCreating}">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search me-2"></i>Buscar Auto y Empleado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/autos/nuevo}" method="get">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="searchPlaca" class="form-label">Placa del Auto</label>
+                                <input type="text" class="form-control" id="searchPlaca" name="placa"
+                                       th:value="${placa != null ? placa : (auto != null ? auto.placa : '')}"
+                                       placeholder="Ingrese la placa del auto" maxlength="10"
+                                       style="height: 40px;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="searchNumeroDocumento" class="form-label">DNI del Empleado</label>
+                                <input type="text" class="form-control" id="searchNumeroDocumento" name="numeroDocumento"
+                                       th:value="${numeroDocumento != null ? numeroDocumento : ''}"
+                                       placeholder="Ingrese el DNI del empleado" maxlength="8"
+                                       style="height: 40px;">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <input type="hidden" name="buscarAuto" value="true">
+                                <button type="submit" class="btn btn-primary w-100" style="height: 40px;">
+                                    <i class="bi bi-search me-1"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Puede buscar por placa del auto, DNI del empleado, o ambos para validar la asignación.
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <form id="autoForm"
+                  th:action="${isCreating} ? @{/autos/guardar} : @{/autos/actualizar/{id}(id=${auto.id})}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  th:object="${autoFormDTO}"
+                  th:if="${shouldShowForm}">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-car-front-fill me-2"></i>Información del Auto
+                                </h5>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="mb-3">
+                                    <label for="autoPlaca" class="form-label">Placa</label>
+                                    <input type="text" class="form-control h-default readonly-field" id="autoPlaca"
+                                           th:field="*{placa}"
+                                           readonly>
+                                    <div th:if="${#fields.hasErrors('placa')}" class="invalid-feedback d-block">
+                                        <span th:errors="*{placa}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoMarca" class="form-label">Marca</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="autoMarca"
+                                                   th:field="*{marca}"
+                                                   readonly>
+                                            <div th:if="${#fields.hasErrors('marca')}" class="invalid-feedback d-block">
+                                                <span th:errors="*{marca}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoModelo" class="form-label">Modelo</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="autoModelo"
+                                                   th:field="*{modelo}"
+                                                   readonly>
+                                            <div th:if="${#fields.hasErrors('modelo')}" class="invalid-feedback d-block">
+                                                <span th:errors="*{modelo}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoSerie" class="form-label">Serie</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="autoSerie"
+                                                   th:field="*{serie}"
+                                                   readonly>
+                                            <div th:if="${#fields.hasErrors('serie')}" class="invalid-feedback d-block">
+                                                <span th:errors="*{serie}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoColor" class="form-label">Color <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control h-default" id="autoColor"
+                                                   th:field="*{color}"
+                                                   th:classappend="${#fields.hasErrors('color')} ? 'is-invalid' : ''"
+                                                   placeholder="Ingrese el color del auto" required>
+                                            <div th:if="${#fields.hasErrors('color')}" class="invalid-feedback">
+                                                <span th:errors="*{color}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoMotor" class="form-label">Motor</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="autoMotor"
+                                                   th:field="*{motor}"
+                                                   readonly>
+                                            <div th:if="${#fields.hasErrors('motor')}" class="invalid-feedback d-block">
+                                                <span th:errors="*{motor}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="autoVin" class="form-label">VIN</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="autoVin"
+                                                   th:field="*{vin}"
+                                                   readonly>
+                                            <div th:if="${#fields.hasErrors('vin')}" class="invalid-feedback d-block">
+                                                <span th:errors="*{vin}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${isEditing and auto.imagen != null}" class="mb-3">
+                                    <label class="form-label">Imagen Actual</label>
+                                    <div class="text-center">
+                                        <img th:src="'data:' + ${auto.imagenTipo != null ? auto.imagenTipo : 'image/jpeg'} + ';base64,' + ${auto.imagenBase64}"
+                                             class="img-thumbnail"
+                                             style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                                             alt="Imagen actual del auto">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="imagen" class="form-label">
+                                        <span th:if="${isEditing}">Cambiar Imagen</span>
+                                        <span th:unless="${isEditing}">Imagen del Auto</span>
+                                    </label>
+                                    <input type="file" class="form-control h-default" id="imagen"
+                                           th:field="*{imagen}"
+                                           th:classappend="${#fields.hasErrors('imagen')} ? 'is-invalid' : ''"
+                                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                                    <div class="form-text">Formatos permitidos: JPG, PNG, GIF, WebP. Tamaño máximo: 5MB</div>
+                                    <div th:if="${#fields.hasErrors('imagen')}" class="invalid-feedback">
+                                        <span th:errors="*{imagen}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-gear-fill me-2"></i>Configuración
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:field="*{esPropioEmpresa}"
+                                           id="esPropioEmpresa">
+                                    <label class="form-check-label" for="esPropioEmpresa">
+                                        Es propio de la empresa
+                                    </label>
+                                    <div class="form-text">Indica la propiedad del auto, pero puede tener conductor asignado</div>
+                                    <div th:if="${#fields.hasErrors('esPropioEmpresa')}" class="invalid-feedback d-block">
+                                        <span th:errors="*{esPropioEmpresa}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3" id="empleadoField">
+                                    <label for="empleadoId" class="form-label">
+                                        Conductor Asignado
+                                    </label>
+                                    <select class="form-select h-default"
+                                            th:field="*{empleadoId}"
+                                            id="empleadoId"
+                                            th:classappend="${#fields.hasErrors('empleadoId')} ? 'is-invalid' : ''">
+                                        <option value="">-- Sin conductor asignado --</option>
+                                        <option th:if="${isCreating and empleadoBuscado != null}"
+                                                th:value="${empleadoBuscado.persona.numeroDocumento}"
+                                                th:text="${empleadoBuscado.persona.nombre + ' ' + empleadoBuscado.persona.apePaterno + ' - ' + empleadoBuscado.persona.numeroDocumento + ' (ENCONTRADO)'}"
+                                                selected>
+                                            Empleado Encontrado
+                                        </option>
+                                        <option th:if="${isEditing and auto.empleado != null}"
+                                                th:value="${auto.empleado.persona.numeroDocumento}"
+                                                th:text="${auto.empleado.persona.nombre + ' ' + auto.empleado.persona.apePaterno + ' - ' + auto.empleado.persona.numeroDocumento + ' (ACTUAL)'}"
+                                                th:selected="${empleadoBuscado == null}">
+                                            Conductor Actual
+                                        </option>
+                                        <option th:each="conductor : ${conductores}"
+                                                th:unless="${(isCreating and empleadoBuscado != null and conductor.persona.numeroDocumento == empleadoBuscado.persona.numeroDocumento) or 
+                                                           (isEditing and auto.empleado != null and conductor.persona.numeroDocumento == auto.empleado.persona.numeroDocumento)}"
+                                                th:value="${conductor.persona.numeroDocumento}"
+                                                th:text="${conductor.persona.nombre + ' ' + conductor.persona.apePaterno + ' - ' + conductor.persona.numeroDocumento}">
+                                            Conductor
+                                        </option>
+                                    </select>
+                                    <div class="form-text" id="empleadoHelp">
+                                        Opcional: Puede asignar un conductor al auto (solo empleados con cargo de conductor)
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('empleadoId')}" class="invalid-feedback">
+                                        <span th:errors="*{empleadoId}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:field="*{activo}"
+                                           id="activo">
+                                    <label class="form-check-label" for="activo">Activo</label>
+                                    <div th:if="${#fields.hasErrors('activo')}" class="invalid-feedback d-block">
+                                        <span th:errors="*{activo}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/autos}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success" id="btnGuardar">
+                                <i class="bi bi-check-circle me-1"></i>
+                                <span th:text="${isCreating} ? 'Guardar Auto' : 'Actualizar Auto'">Guardar Auto</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </th:block>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+    <script>
+    </script>
+</div>
+
+</body>
+</html>

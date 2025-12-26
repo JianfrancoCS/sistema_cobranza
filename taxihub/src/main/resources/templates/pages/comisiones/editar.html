@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Editar Comisión - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi me-2 bi-pencil-square"></i>
+            Editar Comisión
+        </h2>
+        <a th:href="@{/comisiones}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; min-height: 0;">
+        <div th:if="${successMessage}"
+             th:attr="data-success-message=${successMessage}"
+             style="display: none;"></div>
+        <div th:if="${errorMessage}"
+             th:attr="data-error-message=${errorMessage}"
+             style="display: none;"></div>
+
+        <form id="comisionForm"
+              th:action="@{/comisiones/editar/{id}(id=${comisionPago.id})}"
+              th:object="${comisionPago}"
+              method="post"
+              th:if="${comisionPago != null}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-currency-dollar me-2"></i>Información de la Comisión
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código</label>
+                                <input type="text" class="form-control h-default readonly-field" id="codigo"
+                                       th:value="${comisionPago.codigo}"
+                                       readonly>
+                                <div class="form-text">El código no se puede modificar</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control h-default" id="nombre"
+                                       th:field="*{nombre}"
+                                       th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"
+                                       placeholder="Ingrese el nombre de la comisión" 
+                                       maxlength="255">
+                                <div th:if="${#fields.hasErrors('nombre')}" class="invalid-feedback">
+                                    <span th:errors="*{nombre}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="monto" class="form-label">
+                                    Monto <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group" th:classappend="${#fields.hasErrors('monto')} ? 'has-validation'">
+                                    <span class="input-group-text">S/.</span>
+                                    <input type="number" class="form-control h-default" id="monto"
+                                           th:field="*{monto}"
+                                           th:classappend="${#fields.hasErrors('monto')} ? 'is-invalid'"
+                                           placeholder="0.00"
+                                           step="0.01">
+                                    <div th:if="${#fields.hasErrors('monto')}" class="invalid-feedback">
+                                        <span th:errors="*{monto}"></span>
+                                    </div>
+                                </div>
+                                <div class="form-text">Ingrese el monto de la comisión en soles</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fechaCreacion" class="form-label">Fecha de Creación</label>
+                                <input type="text" class="form-control h-default readonly-field" id="fechaCreacion"
+                                       th:value="${comisionPago.fechaCreacion != null ? #temporals.format(comisionPago.fechaCreacion, 'dd/MM/yyyy HH:mm') : 'N/A'}"
+                                       readonly>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4 justify-content-center">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/comisiones}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success" id="btnGuardar">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Actualizar Comisión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+</div>
+
+</body>
+</html>

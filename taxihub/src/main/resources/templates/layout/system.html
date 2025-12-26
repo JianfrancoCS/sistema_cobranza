@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="system(content, title, scripts)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">TaxiHub - Dashboard</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body class="d-flex flex-column vh-100">
+
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<div class="d-flex flex-grow-1">
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+    <main class="d-block w-100 overflow-y-auto overflow-x-hidden px-3 pt-3 pb-0" style="height: calc(100vh - 64px)">
+        <div th:replace="${content}" class=""></div>
+    </main>
+</div>
+
+<div th:replace="${scripts}"></div>
+<script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/componentes/bootstrap.js}"></script>
+<script th:src="@{/js/componentes/sidebar.js}"></script>
+
+<script th:if="${@environment.acceptsProfiles('local')}" src="http://localhost:35729/livereload.js"></script>
+</body>
+</html>

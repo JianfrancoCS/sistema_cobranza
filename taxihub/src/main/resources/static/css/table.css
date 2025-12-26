@@ -1,0 +1,291 @@
+
+.table-hover tbody tr {
+    background-color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+.table-hover tbody tr:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+    background-color: rgba(var(--bs-primary-rgb), 0.02);
+}
+
+.table-borderless>:not(caption)>*>* {
+    border-bottom-width: 0;
+}
+
+/* Espaciado entre filas */
+.table tbody td,
+.table tbody th {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+/* Avatares usando utilidades Bootstrap 5.3 */
+.avatar-container {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* Sistema de badges compatible con Bootstrap 5.3 */
+.badge.bg-success-subtle {
+    color: var(--bs-success-text-emphasis) !important;
+    background-color: var(--bs-success-bg-subtle) !important;
+    border: 1px solid var(--bs-success-border-subtle);
+}
+
+.badge.bg-danger-subtle {
+    color: var(--bs-danger-text-emphasis) !important;
+    background-color: var(--bs-danger-bg-subtle) !important;
+    border: 1px solid var(--bs-danger-border-subtle);
+}
+
+.badge.bg-primary-subtle {
+    color: var(--bs-primary-text-emphasis) !important;
+    background-color: var(--bs-primary-bg-subtle) !important;
+    border: 1px solid var(--bs-primary-border-subtle);
+}
+
+.badge.bg-info-subtle {
+    color: var(--bs-info-text-emphasis) !important;
+    background-color: var(--bs-info-bg-subtle) !important;
+    border: 1px solid var(--bs-info-border-subtle);
+}
+
+.badge.bg-warning-subtle {
+    color: var(--bs-warning-text-emphasis) !important;
+    background-color: var(--bs-warning-bg-subtle) !important;
+    border: 1px solid var(--bs-warning-border-subtle);
+}
+
+.badge.bg-secondary-subtle {
+    color: var(--bs-secondary-text-emphasis) !important;
+    background-color: var(--bs-secondary-bg-subtle) !important;
+    border: 1px solid var(--bs-secondary-border-subtle);
+}
+
+/* Mejoras en botones de acción */
+.list-inline-item a,
+.list-inline-item button {
+    width: 32px !important;
+    height: 32px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--bs-border-radius);
+    border: none;
+    text-decoration: none;
+    background: transparent;
+}
+
+.list-inline-item a:hover,
+.list-inline-item button:hover {
+    transform: scale(1.1);
+    background-color: var(--bs-gray-100);
+}
+
+/* Colores específicos para acciones */
+.list-inline-item a.text-info:hover {
+    background-color: var(--bs-info-bg-subtle);
+    color: var(--bs-info) !important;
+}
+
+.list-inline-item a.text-primary:hover {
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary) !important;
+}
+
+.list-inline-item a.text-success:hover {
+    background-color: var(--bs-success-bg-subtle);
+    color: var(--bs-success) !important;
+}
+
+.list-inline-item a.text-warning:hover {
+    background-color: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning) !important;
+}
+
+.list-inline-item a.text-danger:hover {
+    background-color: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger) !important;
+}
+
+/* Form controls mejorados con Bootstrap 5.3 */
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--bs-primary);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Paginación con variables Bootstrap 5.3 */
+.pagination .page-link {
+    color: var(--bs-primary);
+    border-color: var(--bs-border-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+/* Dropdowns mejorados */
+.dropdown-menu {
+    border: none;
+    box-shadow: var(--bs-box-shadow-lg);
+    border-radius: var(--bs-border-radius-lg);
+    min-width: 200px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: var(--bs-font-size-sm);
+}
+
+.dropdown-item:hover {
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary);
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger);
+}
+
+.alert-info {
+    background-color: var(--bs-info-bg-subtle);
+    border-color: var(--bs-info-border-subtle);
+    color: var(--bs-info-text-emphasis);
+}
+
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Estados vacíos */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state .display-4 {
+    opacity: 0.5;
+    color: var(--bs-secondary-color);
+}
+
+/* Títulos de página */
+.page-title {
+    color: var(--bs-heading-color);
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.page-title .text-muted {
+    font-weight: 400;
+    font-size: var(--bs-font-size-sm);
+}
+
+/* Tooltips personalizados */
+.tooltip-inner {
+    background-color: var(--bs-dark);
+    font-size: var(--bs-font-size-sm);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .table tbody td,
+    .table tbody th {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .avatar-container {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    .list-inline-item a,
+    .list-inline-item button {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.table tbody tr {
+    animation: fadeInUp 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.table tbody tr:nth-child(6) { animation-delay: 0.3s; }
+.table tbody tr:nth-child(7) { animation-delay: 0.35s; }
+.table tbody tr:nth-child(8) { animation-delay: 0.4s; }
+.table tbody tr:nth-child(9) { animation-delay: 0.45s; }
+.table tbody tr:nth-child(10) { animation-delay: 0.5s; }
+
+.card {
+    box-shadow: var(--bs-box-shadow-sm);
+    border-radius: var(--bs-border-radius-lg);
+}
+
+.card:hover {
+    box-shadow: var(--bs-box-shadow);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.btn {
+    border-radius: var(--bs-border-radius);
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.table-responsive {
+    border-radius: var(--bs-border-radius-lg);
+    overflow: hidden;
+}
+
+.bx {
+    font-size: 1.1em;
+    vertical-align: middle;
+}

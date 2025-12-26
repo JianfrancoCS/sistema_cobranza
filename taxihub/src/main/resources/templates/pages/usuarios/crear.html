@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, 'Nuevo Usuario - TaxiHub', ~{::scripts})}">
+
+<head>
+    <title>Crear Usuario</title>
+</head>
+
+<body>
+
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-plus me-2"></i>Crear Nuevo Usuario</h2>
+        <a href="/usuarios" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-badge me-2"></i>Buscar Empleado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" th:action="@{/usuarios/crear}">
+                        <div class="mb-3">
+                            <label for="dni" class="form-label">DNI del Empleado</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" name="dni" 
+                                       th:value="${param.dni}" placeholder="Ingrese DNI del empleado">
+                                <button type="submit" class="btn btn-primary">
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div th:if="${errorMessage != null}" class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${empleado != null}">
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-person-check me-2"></i>Empleado Seleccionado</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>DNI:</strong> <span th:text="${empleado.persona.numeroDocumento}"></span></p>
+                                <p><strong>Nombre:</strong> <span th:text="${empleado.persona.nombre}"></span></p>
+                                <p><strong>Apellido Paterno:</strong> <span th:text="${empleado.persona.apePaterno}"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Apellido Materno:</strong> <span th:text="${empleado.persona.apeMaterno}"></span></p>
+                                <p><strong>Cargo:</strong> <span th:text="${empleado.cargo.nombre}"></span></p>
+                                <p><strong>Estado:</strong> 
+                                    <span th:if="${empleado.activo}" class="badge bg-success">Activo</span>
+                                    <span th:unless="${empleado.activo}" class="badge bg-danger">Inactivo</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-person-vcard me-2"></i>Información Personal</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Género:</strong> <span th:text="${empleado.persona.genero}"></span></p>
+                                <p th:if="${empleado.persona.fechaNac != null}"><strong>Fecha Nacimiento:</strong> 
+                                    <span th:text="${#temporals.format(empleado.persona.fechaNac, 'dd/MM/yyyy')}"></span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p th:if="${empleado.persona.direccion != null}"><strong>Dirección:</strong> 
+                                    <span th:text="${empleado.persona.direccion}"></span>
+                                </p>
+                                <p th:if="${empleado.persona.distrito != null}"><strong>Distrito:</strong> 
+                                    <span th:text="${empleado.persona.distrito.nombre}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" th:action="@{/usuarios/crear}" th:object="${usuarioForm}" enctype="multipart/form-data">
+            <input type="hidden" name="dni" th:value="${empleado != null ? empleado.persona.numeroDocumento : ''}">
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Información de Usuario
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="correo" class="form-label">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" th:field="*{correo}" th:classappend="${#fields.hasErrors('correo')} ? 'is-invalid'">
+                                    <div th:if="${#fields.hasErrors('correo')}" class="invalid-feedback">
+                                        <span th:errors="*{correo}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="contrasena" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                    <input type="password" class="form-control" th:field="*{contrasena}" th:classappend="${#fields.hasErrors('contrasena')} ? 'is-invalid'">
+                                    <div th:if="${#fields.hasErrors('contrasena')}" class="invalid-feedback">
+                                        <span th:errors="*{contrasena}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{contrasenaTemporal}">
+                                    <label class="form-check-label" for="contrasenaTemporal">
+                                        <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                                        Contraseña temporal
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="imagen" class="form-label">Foto del Usuario (Opcional)</label>
+                                <input type="file" class="form-control" th:field="*{imagen}" accept="image/*">
+                                <div class="form-text">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{activo}" checked>
+                                    <label class="form-check-label" for="activo">
+                                        <i class="bi bi-check-circle text-success me-1"></i>
+                                        Usuario activo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-shield-check me-2"></i>Permisos y Grupos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Grupo</label>
+                                <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
+                                    <div th:if="${grupos.isEmpty()}" class="text-muted">
+                                        No hay grupos disponibles
+                                    </div>
+                                    <div th:each="grupo : ${grupos}" class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                               th:id="'grupo_' + ${grupo.id}"
+                                               th:field="*{grupoId}" th:value="${grupo.id}">
+                                        <label class="form-check-label" th:for="'grupo_' + ${grupo.id}">
+                                            <strong th:text="${grupo.nombreGrupo}"></strong>
+                                            <small class="text-muted d-block" th:text="${grupo.descripcion}"></small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div th:if="${#fields.hasErrors('grupoId')}" class="text-danger small mt-2">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    <span th:errors="*{grupoId}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Autoridades Específicas</label>
+                                <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
+                                    <div th:if="${autoridades.isEmpty()}" class="text-muted">
+                                        No hay autoridades disponibles
+                                    </div>
+                                    <div th:each="autoridad : ${autoridades}" class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               th:id="'autoridad_' + ${autoridad.id}"
+                                               th:field="*{autoridadIds}" th:value="${autoridad.id}">
+                                        <label class="form-check-label" th:for="'autoridad_' + ${autoridad.id}">
+                                            <strong th:text="${autoridad.nombreAutoridad}"></strong>
+                                            <small class="text-muted d-block" th:text="${autoridad.descripcion}"></small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="/usuarios" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Crear Usuario
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+</div>
+
+</body>
+</html>

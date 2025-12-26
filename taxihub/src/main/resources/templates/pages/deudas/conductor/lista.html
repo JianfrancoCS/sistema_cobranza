@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Mis Deudas - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column" style="height: 100%; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-exclamation me-2"></i>Mis Deudas</h2>
+        <div class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            Solo tus deudas pendientes
+        </div>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; min-height: 0;">
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/deudas/conductor}" method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="pendiente" class="form-label">Estado Pago</label>
+                    <select class="form-select" id="pendiente" name="pendiente">
+                        <option value="">Todos</option>
+                        <option value="true" th:selected="${pendiente != null and pendiente}">Pendientes</option>
+                        <option value="false" th:selected="${pendiente != null and !pendiente}">Saldadas</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="activo" class="form-label">Estado</label>
+                    <select class="form-select" id="activo" name="activo">
+                        <option value="">Todos</option>
+                        <option value="true" th:selected="${activo != null and activo}">Activo</option>
+                        <option value="false" th:selected="${activo != null and !activo}">Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha"
+                           th:value="${fecha}" placeholder="Seleccionar fecha">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="btn-group w-100" role="group">
+                        <button type="submit" class="btn btn-primary" style="height: 40px;">
+                            <i class="bi bi-search me-1"></i>
+                        </button>
+                        <a th:href="@{/deudas/conductor}" class="btn btn-outline-secondary" style="height: 40px; display: flex; align-items: center;">
+                            <i class="bi bi-x-circle me-1"></i>Limpiar
+                        </a>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" style="height: 40px;">
+                                <i class="bi bi-funnel-fill me-1"></i>Rápidos
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:href="@{/deudas/conductor(pendiente=true)}">
+                                    <i class="bi bi-clock me-2"></i>Solo Pendientes</a></li>
+                                <li><a class="dropdown-item" th:href="@{/deudas/conductor(pendiente=false)}">
+                                    <i class="bi bi-check-circle me-2"></i>Solo Saldadas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}"
+         th:attr="data-success-message=${successMessage}"
+         style="display: none;"></div>
+    <div th:if="${errorMessage}"
+         th:attr="data-error-message=${errorMessage}"
+         style="display: none;"></div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div th:if="${deudas.isEmpty()}" class="alert alert-success text-center" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:if="${pendiente != null or activo != null}">
+                    No tienes deudas con los filtros aplicados.
+                </span>
+                <span th:unless="${pendiente != null or activo != null}">
+                    ¡Felicidades! No tienes deudas pendientes.
+                </span>
+            </div>
+            <div th:unless="${deudas.isEmpty()}">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Monto Deuda</th>
+                            <th>Monto Pagado</th>
+                            <th>Saldo Pendiente</th>
+                            <th>Estado Pago</th>
+                            <th>Estado</th>
+                            <th>Fecha Creación</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="deuda : ${deudas}">
+                            <td>
+                                <strong th:text="${deuda.id}"></strong>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-danger">
+                                    S/. <span th:text="${#numbers.formatDecimal(deuda.montoDeuda, 1, 2)}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">
+                                    S/. <span th:text="${#numbers.formatDecimal(deuda.montoPagado, 1, 2)}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:classappend="${deuda.saldoPendiente.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-warning fw-bold' : 'text-success fw-bold'">
+                                    S/. <span th:text="${#numbers.formatDecimal(deuda.saldoPendiente, 1, 2)}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:classappend="${deuda.estaSaldada()} ? 'bg-success' : 'bg-warning'" class="badge">
+                                    <i th:classappend="${deuda.estaSaldada()} ? 'bi-check-circle' : 'bi-clock'" class="bi me-1"></i>
+                                    <span th:text="${deuda.estaSaldada()} ? 'Saldada' : 'Pendiente'"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:classappend="${deuda.activo} ? 'bg-success' : 'bg-danger'" class="badge">
+                                    <i th:classappend="${deuda.activo} ? 'bi-check-circle' : 'bi-x-circle'" class="bi me-1"></i>
+                                    <span th:text="${deuda.activo} ? 'Activo' : 'Inactivo'"></span>
+                                </span>
+                            </td>
+                            <td th:text="${deuda.fechaCreacion != null ? #temporals.format(deuda.fechaCreacion, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a th:if="${deuda.saldoPendiente.compareTo(T(java.math.BigDecimal).ZERO) > 0 and deuda.activo}"
+                                       th:href="@{/pagos/conductor/nuevo(deudaId=${deuda.id})}"
+                                       class="btn btn-sm btn-success"
+                                       title="Realizar pago">
+                                        <i class="bi bi-cash-coin"></i> Pagar
+                                    </a>
+                                    
+                                    <span th:unless="${deuda.saldoPendiente.compareTo(T(java.math.BigDecimal).ZERO) > 0 and deuda.activo}"
+                                          class="text-muted small">
+                                        <i class="bi bi-check-circle text-success"></i> Saldada
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${deudas.totalPages > 1}" class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Paginación de mis deudas">
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${!deudas.hasPrevious()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/deudas/conductor(page=${deudas.number - 1}, size=${deudas.size}, pendiente=${pendiente}, activo=${activo}, fecha=${fecha})}"
+                                   tabindex="-1" th:attr="aria-disabled=${!deudas.hasPrevious()}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, deudas.totalPages - 1)}"
+                                th:classappend="${pageNum == deudas.number} ? 'active'">
+                                <a class="page-link" th:href="@{/deudas/conductor(page=${pageNum}, size=${deudas.size}, pendiente=${pendiente}, activo=${activo}, fecha=${fecha})}"
+                                   th:text="${pageNum + 1}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${!deudas.hasNext()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/deudas/conductor(page=${deudas.number + 1}, size=${deudas.size}, pendiente=${pendiente}, activo=${activo}, fecha=${fecha})}"
+                                   th:attr="aria-disabled=${!deudas.hasNext()}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Empleados - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column" style="height: 100%; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-badge me-2"></i>Gestión de Empleados</h2>
+        <a th:href="@{/empleados/nuevo}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Empleado
+        </a>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; min-height: 0;">
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/empleados}" method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="buscarDni" class="form-label">DNI</label>
+                    <input type="text" class="form-control" id="buscarDni" name="buscarDni"
+                           th:value="${buscarDni}" placeholder="Buscar por DNI" maxlength="8">
+                </div>
+                <div class="col-md-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre"
+                           th:value="${nombre}" placeholder="Buscar por nombre completo">
+                </div>
+                <div class="col-md-2">
+                    <label for="cargoFiltro" class="form-label">Cargo</label>
+                    <select class="form-select" id="cargoFiltro" name="cargoId">
+                        <option value="">Todos</option>
+                        <option th:each="cargo : ${cargos}"
+                                th:value="${cargo.id}"
+                                th:text="${cargo.nombre}"
+                                th:selected="${cargoId != null and cargoId == cargo.id}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="btn-group w-100" role="group">
+                        <button type="submit" class="btn btn-primary" style="height: 40px;">
+                            <i class="bi bi-search me-1"></i>
+                        </button>
+                        <a th:href="@{/empleados}" class="btn btn-outline-secondary" style="height: 40px; display: flex; align-items: center;">
+                            <i class="bi bi-x-circle me-1"></i>Limpiar
+                        </a>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" style="height: 40px;">
+                                <i class="bi bi-funnel-fill me-1"></i>Rápidos
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:href="@{/empleados(cargoId=${cargoIdConductor})}">
+                                    <i class="bi bi-car-front me-2"></i>Solo Conductores</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}"
+         th:attr="data-success-message=${successMessage}"
+         style="display: none;"></div>
+    <div th:if="${errorMessage}"
+         th:attr="data-error-message=${errorMessage}"
+         style="display: none;"></div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div th:if="${empleados.isEmpty()}" class="alert alert-info text-center" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <span th:if="${buscarDni != null or nombre != null or cargoId != null}">
+                    No se encontraron empleados con los filtros aplicados.
+                </span>
+                <span th:unless="${buscarDni != null or nombre != null or cargoId != null}">
+                    No hay empleados registrados.
+                </span>
+            </div>
+            <div th:unless="${empleados.isEmpty()}">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>DNI</th>
+                            <th>Nombre Completo</th>
+                            <th>Cargo</th>
+                            <th>Licencia</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Activo</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="empleado : ${empleados}">
+                            <td>
+                                <strong th:text="${empleado.persona.numeroDocumento}"></strong>
+                            </td>
+                            <td th:text="${empleado.persona.nombre + ' ' + empleado.persona.apePaterno + ' ' + (empleado.persona.apeMaterno != null ? empleado.persona.apeMaterno : '')}"></td>
+                            <td>
+                                <span class="badge bg-secondary" th:text="${empleado.cargo.nombre}"></span>
+                            </td>
+                            <td>
+                                <div th:if="${empleado.cargo.nombre.toLowerCase().contains('conductor')}">
+                                    <div th:if="${empleado.persona.licencia != null}">
+                                        <span class="badge bg-success text-white" th:text="${empleado.persona.licencia.numeroLicencia}"></span>
+                                    </div>
+                                    <div th:unless="${empleado.persona.licencia != null}">
+                                        <span class="text-muted">N/A</span>
+                                    </div>
+                                </div>
+                                <div th:unless="${empleado.cargo.nombre.toLowerCase().contains('conductor')}">
+                                    <span class="text-muted">N/A</span>
+                                </div>
+                            </td>
+                            <td th:text="${empleado.fechaInicio != null ? #temporals.format(empleado.fechaInicio, 'dd/MM/yyyy') : 'N/A'}"></td>
+                            <td th:text="${empleado.fechaFin != null ? #temporals.format(empleado.fechaFin, 'dd/MM/yyyy') : 'N/A'}"></td>
+                            <td>
+                                <span th:classappend="${empleado.activo} ? 'bg-success' : 'bg-danger'" class="badge">
+                                    <i th:classappend="${empleado.activo} ? 'bi-check-circle' : 'bi-x-circle'" class="bi me-1"></i>
+                                    <span th:text="${empleado.activo} ? 'Activo' : 'Inactivo'"></span>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/empleados/editar/{numeroDocumento}(numeroDocumento=${empleado.persona.numeroDocumento})}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Editar empleado">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Eliminar empleado"
+                                            onclick="confirmDelete(this)"
+                                            th:data-id="${empleado.persona.numeroDocumento}"
+                                            th:data-type="empleados"
+                                            th:data-name="${empleado.persona.nombre + ' ' + empleado.persona.apePaterno}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    <div class="text-center mb-3">
+                        <span class="text-muted">
+                            Mostrando <span th:text="${pageSize * currentPage + 1}"></span> a
+                            <span th:text="${pageSize * currentPage + empleados.size()}"></span>
+                            de <span th:text="${totalElements}"></span> empleados
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <label for="pageSizeSelect" class="form-label me-2 mb-0">Mostrar:</label>
+                            <select class="form-select" id="pageSizeSelect" style="width: auto;" onchange="location.href=this.value">
+                                <option th:value="@{/empleados(page=0, size=10, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                        th:selected="${pageSize == 10}">10</option>
+                                <option th:value="@{/empleados(page=0, size=25, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                        th:selected="${pageSize == 25}">25</option>
+                                <option th:value="@{/empleados(page=0, size=50, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                        th:selected="${pageSize == 50}">50</option>
+                            </select>
+                            <span class="ms-2">registros</span>
+                        </div>
+                    </div>
+
+                    <nav th:if="${totalPages > 1}" aria-label="Navegación de páginas" class="d-flex justify-content-center">
+                        <ul class="pagination">
+                            <li th:classappend="${currentPage == 0} ? 'disabled' : ''" class="page-item">
+                                <a class="page-link" th:if="${currentPage > 0}"
+                                   th:href="@{/empleados(page=${currentPage - 1}, size=${pageSize}, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                   aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                                <span class="page-link" th:if="${currentPage == 0}" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </span>
+                            </li>
+
+                            <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:if="${pageNum >= (currentPage - 2) and pageNum <= (currentPage + 2)}"
+                                th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                class="page-item">
+                                <a class="page-link" th:if="${pageNum != currentPage}"
+                                   th:href="@{/empleados(page=${pageNum}, size=${pageSize}, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                   th:text="${pageNum + 1}">1</a>
+                                <span class="page-link" th:if="${pageNum == currentPage}" aria-current="page" th:text="${pageNum + 1}">1</span>
+                            </li>
+
+                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''" class="page-item">
+                                <a class="page-link" th:if="${currentPage < totalPages - 1}"
+                                   th:href="@{/empleados(page=${currentPage + 1}, size=${pageSize}, buscarDni=${buscarDni}, cargoId=${cargoId}, nombre=${nombre})}"
+                                   aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                                <span class="page-link" th:if="${currentPage >= totalPages - 1}" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/modal-confirm :: simple}"></div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+</div>
+
+</body>
+</html>

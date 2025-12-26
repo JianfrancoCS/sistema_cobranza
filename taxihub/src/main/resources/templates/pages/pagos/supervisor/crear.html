@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Crear Pago - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi me-2 bi-cash-coin"></i>
+            Crear Pago Físico
+        </h2>
+        <a th:href="@{/deudas}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver a Deudas
+        </a>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; min-height: 0;">
+        <div th:if="${successMessage}"
+             th:attr="data-success-message=${successMessage}"
+             style="display: none;"></div>
+        <div th:if="${errorMessage}"
+             th:attr="data-error-message=${errorMessage}"
+             style="display: none;"></div>
+
+        <form id="pagoForm" th:action="@{/pagos/supervisor/nuevo}" method="post" th:object="${pagoForm}">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-fill me-2"></i>Conductor
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control h-default readonly-field"
+                                       th:value="${deudaSeleccionada.empleado != null ? (deudaSeleccionada.empleado.persona.nombre + ' ' + deudaSeleccionada.empleado.persona.apePaterno + ' ' + (deudaSeleccionada.empleado.persona.apeMaterno != null ? deudaSeleccionada.empleado.persona.apeMaterno : '')) : 'Empleado no encontrado'}"
+                                       readonly>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">DNI</label>
+                                        <input type="text" class="form-control h-default readonly-field"
+                                               th:value="${deudaSeleccionada.empleado?.persona?.numeroDocumento ?: 'N/A'}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Cargo</label>
+                                        <input type="text" class="form-control h-default readonly-field"
+                                               th:value="${deudaSeleccionada.empleado != null ? deudaSeleccionada.empleado.cargo.nombre : 'N/A'}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-credit-card-2-back me-2"></i>Deuda Seleccionada
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" th:field="*{deudaId}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">ID de Deuda</label>
+                                <input type="text" class="form-control h-default readonly-field"
+                                       th:value="${deudaSeleccionada.id}" readonly>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Monto Original</label>
+                                        <input type="text" class="form-control h-default readonly-field"
+                                               th:value="'S/. ' + ${#numbers.formatDecimal(deudaSeleccionada.montoDeuda, 1, 2)}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Pagado</label>
+                                        <input type="text" class="form-control h-default readonly-field"
+                                               th:value="'S/. ' + ${#numbers.formatDecimal(deudaSeleccionada.montoPagado, 1, 2)}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Saldo Pendiente</label>
+                                        <input type="text" class="form-control h-default readonly-field text-warning fw-bold"
+                                               th:value="'S/. ' + ${#numbers.formatDecimal(deudaSeleccionada.saldoPendiente, 1, 2)}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-cash-stack me-2"></i>Datos del Pago
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="monto" class="form-label">
+                                    Monto a Pagar <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/.</span>
+                                    <input type="number" class="form-control form-control-lg" th:field="*{monto}"
+                                           th:classappend="${#fields.hasErrors('monto')} ? 'is-invalid' : ''"
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0.01"
+                                           th:max="${deudaSeleccionada.saldoPendiente}">
+                                </div>
+                                <div class="form-text">
+                                    Máximo: S/. <span th:text="${#numbers.formatDecimal(deudaSeleccionada.saldoPendiente, 1, 2)}"></span>
+                                </div>
+                                <div th:if="${#fields.hasErrors('monto')}" class="invalid-feedback">
+                                    <span th:errors="*{monto}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Pago</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+                                    <input type="text" class="form-control h-default readonly-field"
+                                           value="FÍSICO" readonly>
+                                </div>
+                                <input type="hidden" name="tipoPago" value="FISICO">
+                                <div class="form-text">Los pagos del administrador son siempre físicos</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label">Observaciones</label>
+                                <textarea class="form-control" th:field="*{descripcion}"
+                                          th:classappend="${#fields.hasErrors('descripcion')} ? 'is-invalid' : ''"
+                                          rows="4" placeholder="Escriba cualquier observación sobre este pago..."></textarea>
+                                <div th:if="${#fields.hasErrors('descripcion')}" class="invalid-feedback">
+                                    <span th:errors="*{descripcion}"></span>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Importante:</strong> Al registrar este pago, se actualizará automáticamente el saldo de la deuda.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/deudas}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg" id="btnGuardar">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrar Pago Físico
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+    <script>
+        document.getElementById('pagoForm').addEventListener('submit', function(e) {
+            const montoInput = document.getElementById('monto');
+            const monto = parseFloat(montoInput.value);
+            const saldoMaximo = parseFloat(montoInput.getAttribute('max'));
+            
+            if (monto <= 0) {
+                e.preventDefault();
+                alert('El monto debe ser mayor a 0.');
+                montoInput.focus();
+                return false;
+            }
+            
+            if (monto > saldoMaximo) {
+                e.preventDefault();
+                alert('El monto no puede ser mayor al saldo pendiente: S/. ' + saldoMaximo.toFixed(2));
+                montoInput.focus();
+                return false;
+            }
+            
+            const confirmacion = confirm(
+                '¿Confirmar el registro del pago?\n\n' +
+                'Monto: S/. ' + monto.toFixed(2) + '\n' +
+                'Tipo: FÍSICO\n' +
+                'Conductor: ' + document.querySelector('input[readonly]').value
+            );
+            
+            if (!confirmacion) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('monto').focus();
+        });
+    </script>
+</div>
+
+</body>
+</html>

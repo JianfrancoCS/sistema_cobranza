@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Asignar Conductor - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-person-plus me-2"></i>Asignar Conductor
+        </h2>
+        <a th:href="@{/autos}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; min-height: 0;">
+        <div th:if="${successMessage}"
+             th:attr="data-success-message=${successMessage}"
+             style="display: none;"></div>
+        <div th:if="${errorMessage}"
+             th:attr="data-error-message=${errorMessage}"
+             style="display: none;"></div>
+
+        <form id="asignarForm"
+              th:action="@{/autos/asignar}"
+              method="post"
+              th:object="${asignarConductorDTO}">
+
+            <input type="hidden" th:field="*{autoId}" th:value="${auto.id}">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-car-front-fill me-2"></i>Información del Auto
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Placa</label>
+                                <input type="text" class="form-control" th:value="${auto.placa}" readonly>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Marca</label>
+                                        <input type="text" class="form-control" th:value="${auto.marca}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Modelo</label>
+                                        <input type="text" class="form-control" th:value="${auto.modelo}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Color</label>
+                                        <input type="text" class="form-control" th:value="${auto.color}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Propiedad</label>
+                                        <input type="text" class="form-control" 
+                                               th:value="${auto.esPropioEmpresa ? 'Empresa' : 'Externo'}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${auto.imagen != null}" class="mb-3">
+                                <label class="form-label">Imagen</label>
+                                <div class="text-center">
+                                    <img th:src="'data:' + ${auto.imagenTipo != null ? auto.imagenTipo : 'image/jpeg'} + ';base64,' + ${auto.imagenBase64}"
+                                         class="img-thumbnail"
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                                         alt="Imagen del auto">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-gear me-2"></i>Asignación de Conductor
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label class="form-label">Conductor Actual</label>
+                                <div th:if="${auto.empleado != null}" class="alert alert-info">
+                                    <strong th:text="${auto.empleado.persona.nombre + ' ' + auto.empleado.persona.apePaterno}"></strong>
+                                    <br>
+                                    <small>DNI: <span th:text="${auto.empleado.persona.numeroDocumento}"></span></small>
+                                </div>
+                                <div th:unless="${auto.empleado != null}" class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Sin conductor asignado</strong>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="empleadoId" class="form-label">
+                                    Conductor
+                                </label>
+                                <select class="form-select" 
+                                        th:field="*{empleadoId}" 
+                                        id="empleadoId"
+                                        th:classappend="${#fields.hasErrors('empleadoId')} ? 'is-invalid' : ''">
+                                    <option value="">-- Mantener actual --</option>
+                                    <option value="0">🚫 Desasignar conductor</option>
+                                    <option th:if="${auto.empleado != null}"
+                                            th:value="${auto.empleado.persona.numeroDocumento}"
+                                            th:text="${auto.empleado.persona.nombre + ' ' + auto.empleado.persona.apePaterno + ' - ' + auto.empleado.persona.numeroDocumento + ' (ACTUAL)'}"
+                                            th:selected="${asignarConductorDTO.empleadoId == auto.empleado.persona.numeroDocumento}">
+                                        Conductor Actual
+                                    </option>
+                                    <option th:each="conductor : ${conductoresDisponibles}"
+                                            th:unless="${auto.empleado != null and conductor.persona.numeroDocumento == auto.empleado.persona.numeroDocumento}"
+                                            th:value="${conductor.persona.numeroDocumento}"
+                                            th:text="${conductor.persona.nombre + ' ' + conductor.persona.apePaterno + ' - ' + conductor.persona.numeroDocumento}"
+                                            th:selected="${asignarConductorDTO.empleadoId == conductor.persona.numeroDocumento}">
+                                        Conductor
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    Mantener actual | Desasignar | Asignar nuevo conductor disponible
+                                </div>
+                                <div th:if="${#fields.hasErrors('empleadoId')}" class="invalid-feedback">
+                                    <span th:errors="*{empleadoId}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/autos}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-check me-1"></i>
+                            Actualizar Asignación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+</div>
+
+</body>
+</html>

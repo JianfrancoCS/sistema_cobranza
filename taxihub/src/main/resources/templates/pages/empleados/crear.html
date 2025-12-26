@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/system :: system(~{::content}, ${pageTitle}, ~{::scripts})}">
+<head>
+    <title th:text="${pageTitle}">Empleado - TaxiHub</title>
+</head>
+<body>
+
+<div th:fragment="content" class="d-flex flex-column flex-grow-1">
+    <th:block th:with="
+        isCreating=${modo == null or modo == 'crear'},
+        isEditing=${modo == 'editar'},
+        hasPersonaData=${persona != null},
+        shouldShowForm=${(isCreating and persona != null) or isEditing}
+    ">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi me-2" th:classappend="${isCreating} ? 'bi-person-plus-fill' : 'bi-pencil-square'"></i>
+                <span th:text="${isCreating} ? 'Nuevo Empleado' : 'Editar Empleado'">Empleado</span>
+            </h2>
+            <a th:href="@{/empleados}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+        </div>
+
+        <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; min-height: 0;">
+            <div th:if="${successMessage}"
+                 th:attr="data-success-message=${successMessage}"
+                 style="display: none;"></div>
+            <div th:if="${errorMessage}"
+                 th:attr="data-error-message=${errorMessage}"
+                 style="display: none;"></div>
+
+            <div class="card mb-4" th:if="${isCreating}">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-search me-2"></i>Buscar Persona por DNI
+                </h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/empleados/nuevo}" method="get">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="searchDni" class="form-label">DNI de la Persona</label>
+                            <input type="text" class="form-control" id="searchDni" name="dni"
+                                   th:value="${persona != null ? persona.numeroDocumento : ''}"
+                                   placeholder="Ingrese el DNI para buscar la persona" maxlength="8"
+                                   style="height: 40px;">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Opciones</label>
+                            <div class="form-check" style="height: 40px; display: flex; align-items: center;">
+                                <input class="form-check-input" type="checkbox" id="buscarLicencia" name="buscarLicencia" value="true"
+                                       th:checked="${param.buscarLicencia != null and param.buscarLicencia[0] == 'true'} ? true : true">
+                                <label class="form-check-label" for="buscarLicencia">
+                                    Buscar licencia de conducir
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100" style="height: 40px;">
+                                <i class="bi bi-search me-1"></i>Buscar Persona
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+             <form id="empleadoForm"
+              th:action="${isCreating} ? @{/empleados/guardar} : @{/empleados/actualizar/{numeroDocumento}(numeroDocumento=${empleado.persona.numeroDocumento})}"
+              method="post"
+              enctype="multipart/form-data"
+              th:object="${empleadoData}"
+              th:if="${shouldShowForm}">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-fill me-2"></i>Datos de la Persona
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" th:field="*{numeroDocumento}">
+                            <div th:if="${#fields.hasErrors('numeroDocumento')}" class="text-danger small mb-3">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <span th:errors="*{numeroDocumento}"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="personaNombre" class="form-label">Nombres</label>
+                                <input type="text" class="form-control h-default readonly-field" id="personaNombre"
+                                       th:value="${isEditing ? empleado.persona.nombre : persona.nombre}"
+                                       readonly>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaApePaterno" class="form-label">Apellido Paterno</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaApePaterno"
+                                               th:value="${isEditing ? empleado.persona.apePaterno : persona.apePaterno}"
+                                               readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaApeMaterno" class="form-label">Apellido Materno</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaApeMaterno"
+                                               th:value="${isEditing ? (empleado.persona.apeMaterno != null ? empleado.persona.apeMaterno : 'N/A') : (persona.apeMaterno != null ? persona.apeMaterno : 'N/A')}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaDniDisplay" class="form-label">DNI</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaDniDisplay"
+                                               th:value="${isEditing ? empleado.persona.numeroDocumento : persona.numeroDocumento}"
+                                               readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaGenero" class="form-label">Género</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaGenero"
+                                               th:value="${isEditing ? (empleado.persona.genero == 'M' ? 'Masculino' : empleado.persona.genero == 'F' ? 'Femenino' : 'N/A') : (persona.genero == 'M' ? 'Masculino' : persona.genero == 'F' ? 'Femenino' : 'N/A')}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaFechaNac" class="form-label">Fecha de Nacimiento</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaFechaNac"
+                                               th:value="${isEditing ? (empleado.persona.fechaNac != null ? #temporals.format(empleado.persona.fechaNac, 'dd/MM/yyyy') : 'N/A') : (persona.fechaNac != null ? #temporals.format(persona.fechaNac, 'dd/MM/yyyy') : 'N/A')}"
+                                               readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="personaEdad" class="form-label">Edad</label>
+                                        <input type="text" class="form-control h-default readonly-field" id="personaEdad"
+                                               th:value="${personaEdad != null ? personaEdad : 'N/A'}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${licencia != null}">
+                                <hr class="my-3">
+                                <h6 class="text-success mb-3">
+                                    <i class="bi bi-check-circle me-2"></i>Licencia de Conducir
+                                </h6>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="licenciaNumero" class="form-label">Número de Licencia</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="licenciaNumero"
+                                                   th:value="${licencia.numeroLicencia}"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="licenciaCategoria" class="form-label">Categoría</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="licenciaCategoria"
+                                                   th:value="${licencia.categoriaLicencia}"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="licenciaVencimiento" class="form-label">Vencimiento</label>
+                                            <input type="text" class="form-control h-default readonly-field" id="licenciaVencimiento"
+                                                   th:value="${licencia.fechaVencimientoLicencia != null ? #temporals.format(licencia.fechaVencimientoLicencia, 'dd/MM/yyyy') : 'N/A'}"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Activo</label>
+                                            <div class="d-flex align-items-center" style="height: 40px;">
+                                                <span th:classappend="${licencia.isLicenciaVigente()} ? 'badge bg-success' : 'badge bg-danger'">
+                                                    <i th:classappend="${licencia.isLicenciaVigente()} ? 'bi-check-circle' : 'bi-x-circle'" class="bi me-1"></i>
+                                                    <span th:text="${licencia.isLicenciaVigente()} ? 'Vigente' : 'Vencida'"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="imagen" class="form-label">Foto (Opcional)</label>
+                                <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                                <div class="form-text">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-briefcase-fill me-2"></i>Datos del Empleado
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${sinLicenciaMessage}" class="alert alert-warning mb-3" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Licencia no encontrada:</strong>
+                                <span th:text="${sinLicenciaMessage}"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="cargo" class="form-label">Cargo</label>
+                                <select class="form-select h-default" th:field="*{cargoId}" id="cargo">
+                                    <option value="">Seleccione un cargo</option>
+                                    <option th:each="cargoOption : ${cargos}"
+                                            th:value="${cargoOption.id}"
+                                            th:text="${cargoOption.nombre}">
+                                        Cargo
+                                    </option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('cargoId')}" class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    <span th:errors="*{cargoId}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
+                                <input type="date" class="form-control h-default" th:field="*{fechaInicio}"
+                                       id="fechaInicio">
+                                <div th:if="${#fields.hasErrors('fechaInicio')}" class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    <span th:errors="*{fechaInicio}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fechaFin" class="form-label">
+                                    Fecha de Fin
+                                </label>
+                                <input type="date" class="form-control h-default" th:field="*{fechaFin}"
+                                       id="fechaFin">
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" th:field="*{activo}" id="activo">
+                                <label class="form-check-label" for="activo">Activo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/empleados}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success" id="btnGuardar">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <span th:text="${isCreating} ? 'Guardar Empleado' : 'Actualizar Empleado'">Guardar Empleado</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        </div>
+    </th:block>
+</div>
+
+<div th:fragment="scripts">
+    <script th:src="@{/js/componentes/toast.js}"></script>
+</div>
+
+</body>
+</html>
